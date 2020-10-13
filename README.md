@@ -7,4 +7,4 @@ https://www.youtube.com/watch?v=jVYshmW3T9o <--------- walkthhough of the progra
 
 *UPDATE*
 
-*link* <--------Walkthrough of DataRecorder
+https://youtu.be/izhsGeBze3s <--------Walkthrough of DataRecorder
