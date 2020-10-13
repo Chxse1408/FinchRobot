@@ -33,8 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="FinchAPI">
-      <HintPath>G:\My Programs\FinchAPI\FinchAPI.dll</HintPath>
+    <Reference Include="FinchAPI, Version=1.0.5369.18298, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>G:\My Programs\API\FinchAPI.dll</HintPath>
     </Reference>
     <Reference Include="HidSharp">
       <HintPath>G:\My Programs\FinchAPI\HidSharp.dll</HintPath>

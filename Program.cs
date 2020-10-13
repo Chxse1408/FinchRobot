@@ -1,153 +1,272 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
-using FinchAPI;
+﻿using FinchAPI;
+using System;
+
 namespace TalentShow
 {
-    class Program
+    internal class Program
     /************************************
-    Title: Talent Show
-    Description: Shows the user some of the things the Finch can do
+    Title: Data Recorder
+    Description: Records temperature over time
     Author: Chase Kieliszewski
     Date Created: 9/27/2020
-    Last Modified:
+    Last Modified: 10/12/2020
     ************************************/
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
+            Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.White;
             DisplayWelcomeScreen();
             DisplayMainMenu(false);
             DisplayClosingScreen();
         }
-        static void DisplayMainMenu(bool quitApplication)
+
+        #region menus
+
+        private static void DisplayMainMenu(bool quitApplication)
         {
             do
             {
                 Console.ForegroundColor = ConsoleColor.White;
+                Console.CursorVisible = true;
                 Finch fn;
                 fn = new Finch();
-                DisplayHeader("\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t    Main Menu");
-                Console.WriteLine("\n\t\t\t\t\t      What would you like to do?");
-                Console.WriteLine("\t\t\t\t\t\t1) Connect to Finch");
-                Console.WriteLine("\t\t\t\t\t\t2) Talent Show");
-                Console.WriteLine("\t\t\t\t\t\t3) Data Recorder");
-                Console.WriteLine("\t\t\t\t\t\t4) Alarm System");
-                Console.WriteLine("\t\t\t\t\t\t5) User Programming");
-                Console.WriteLine("\t\t\t\t\t\t6) Disconnect to Finch");
-                Console.WriteLine("\t\t\t\t\t\t7) Exit");
+                DisplayHeader("\n\tMain Menu");
+                Console.WriteLine("\n\tWhat would you like to do?");
+                Console.WriteLine("\t1) Connect to Finch");
+                Console.WriteLine("\t2) Talent Show");
+                Console.WriteLine("\t3) Data Recorder");
+                Console.WriteLine("\t4) Alarm System");
+                Console.WriteLine("\t5) User Programming");
+                Console.WriteLine("\t6) Disconnect from Finch");
+                Console.WriteLine("\t7) Exit");
+                DisplayChooseAnOption();
                 string y = Console.ReadLine();
                 switch (y)
                 {
                     case "1":
                         DisplayConnectFinchRobot(fn);
                         break;
+
                     case "2":
                         DisplayTalentShow(fn);
                         break;
+
                     case "3":
-                        DisplayDataRecorder();
+                        DisplayDataRecorder(fn);
                         break;
+
                     case "4":
                         DisplayAlarmSystem();
                         break;
+
                     case "5":
                         DisplayUserProgramming();
                         break;
+
                     case "6":
                         DisplayDisConnectFinchRobot(fn);
                         break;
+
                     case "7":
                         DisplayDisConnectFinchRobot(fn);
                         quitApplication = true;
                         break;
+
                     default:
-                        Console.ForegroundColor = ConsoleColor.Red;
+
                         Console.Clear();
-                        Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\tThat's NOT one of the options!");
-                        Console.WriteLine("\t\t\t\t\tPress any key to go back to main menu.");
+                        Console.WriteLine("That's NOT one of the options!");
+                        Console.WriteLine("Press any key to go back to main menu.");
                         Console.ReadKey();
                         break;
                 }
             }
             while (!quitApplication);
         }
-        static void DisplayHeader(string x)
+
+        private static void DisplayTalentShow(Finch fn)
         {
-            Console.Clear();
-            Console.WriteLine(x);
+            fn.connect();
+            bool quitTalent = false;
+
+            do
+            {
+                DisplayHeader("\n\tTalent Show");
+                Console.WriteLine("\n\tWhat would you like to see?");
+                Console.WriteLine("\ta) Light and sound?");
+                Console.WriteLine("\tb) Dance");
+                Console.WriteLine("\tc) Mixing it up");
+                Console.WriteLine("\td) Return to main menu");
+                DisplayChooseAnOption();
+                string i = Console.ReadLine().ToLower();
+                switch (i)
+                {
+                    case "a":
+                        TalentShowDisplayLightAndSound(fn);
+                        break;
+
+                    case "b":
+                        TalentShowDisplayDance(fn);
+                        break;
+
+                    case "c":
+                        TalentShowDisplayMixingItUp(fn);
+                        break;
+
+                    case "d":
+                        quitTalent = true;
+                        break;
+
+                    default:
+                        Console.Clear();
+                        Console.WriteLine("\tThat's NOT one of the options!");
+                        break;
+                }
+            } while (!quitTalent);
         }
-        static void DisplayContinuePrompt()
+
+        private static void DisplayDataRecorder(Finch fn)
         {
-            Console.WriteLine();
-            Console.WriteLine("\t\t\t\t\t\tpress enter to continue.");
-            Console.ReadKey();
+            int numberOfDataPoints = 0;
+            double dataPointFrequency = 0;
+            double[] temperatures = null;
+
+            fn.connect();
+            bool quitData = false;
+            do
+            {
+                DisplayHeader("\n\tData Recorder");
+                Console.WriteLine("\n\tWhat would you like to see?");
+                Console.WriteLine("\ta) Number of Data Points");
+                Console.WriteLine("\tb) Frequency of Data Points");
+                Console.WriteLine("\tc) Get Data");
+                Console.WriteLine("\td) Show Data");
+                Console.WriteLine("\te) Return to main menu");
+                DisplayChooseAnOption();
+                string MenuChoice = Console.ReadLine().ToLower();
+                switch (MenuChoice)
+                {
+                    case "a":
+                        numberOfDataPoints = DataRecorderDisplayGetNumberOfDataPoints();
+                        break;
+
+                    case "b":
+                        dataPointFrequency = DataRecorderDisplayGetDataPointFrequency();
+                        break;
+
+                    case "c":
+                        temperatures = DataRecorderDisplayGetData(numberOfDataPoints, dataPointFrequency, fn);
+                        break;
+
+                    case "d":
+                        DataRecorderDisplayGetData(temperatures);
+                        break;
+
+                    case "e":
+                        quitData = true;
+                        break;
+
+                    default:
+
+                        Console.Clear();
+                        Console.WriteLine("    That's NOT one of the options!");
+                        break;
+                }
+            } while (!quitData);
         }
-        static void DisplayWelcomeScreen()
+
+        private static void DisplayAlarmSystem()
         {
-            Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\tHello, Welcome to the Finch Talent show!");
-            Console.WriteLine("\n\t\t\t    This application will show you a few things that the Finch can do.");
+            DisplayHeader("     Alarm System");
+            Console.WriteLine("     This module is currently under development.");
             DisplayContinuePrompt();
         }
-        static bool DisplayConnectFinchRobot(Finch fn)
+
+        private static void DisplayUserProgramming()
         {
-            DisplayHeader("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t   Connect to Finch");
+            DisplayHeader("   User Programming");
+            Console.WriteLine("     This module is currently under development.");
+            DisplayContinuePrompt();
+        }
+
+        #endregion menus
+
+        #region tools
+
+        private static void DisplayChooseAnOption()
+        {
+            Console.Write("\tChoose an option>> ");
+        }
+
+        private static void DisplayClosingScreen()
+        {
+            Console.Clear();
+            Console.WriteLine("\tThank you for checking out my Finch demonstration!");
+            DisplayContinuePrompt();
+        }
+
+        private static bool DisplayConnectFinchRobot(Finch fn)
+        {
+            Console.CursorVisible = false;
+            DisplayHeader("\n\tConnect to Finch");
             DisplayContinuePrompt();
             fn.connect();
             bool level = fn.isFinchLevel();
             while (level == true)
             {
                 Console.Clear();
-                Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t  Finch is connected");
+                Console.WriteLine("\n\tFinch is connected");
                 break;
             }
             while (level == false)
             {
                 Console.Clear();
-                Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t    Please plug in your Finch or put it on its wheels and try again.");
+                Console.WriteLine("\n\tPlease plug in your Finch or put it on its wheels and try again.");
                 break;
             }
             DisplayContinuePrompt();
             DisplayMainMenu(false);
             return true;
         }
-        static void DisplayTalentShow(Finch fn)
-        {
-            fn.connect();
-            DisplayHeader("\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t     Talent Show");
-            Console.WriteLine("\n\t\t\t\t\t       What would you like to see?");
-            Console.WriteLine("\t\t\t\t\t\ta) Light and sound?");
-            Console.WriteLine("\t\t\t\t\t\tb) Dance");
-            Console.WriteLine("\t\t\t\t\t\tc) Mixing it up");
-            Console.WriteLine("\t\t\t\t\t\td) Return to main menu");
-            string i = Console.ReadLine().ToLower();
-            switch (i)
-            {
-                case "a":
-                    TalentShowDisplayLightAndSound(fn);
-                    break;
-                case "b":
-                    TalentShowDisplayDance(fn);
-                    break;
-                case "c":
-                    TalentShowDisplayMixingItUp(fn);
-                    break;
-                case "d":
-                    DisplayMainMenu(false);
-                    break;
 
-                default:
-                    Console.ForegroundColor = ConsoleColor.Red;
-                    Console.Clear();
-                    Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t    That's NOT one of the options!");
-                    break;
-            }
+        private static void DisplayContinuePrompt()
+        {
+            Console.WriteLine();
+            Console.WriteLine("\tpress enter to continue.");
+            Console.ReadKey();
+        }
+
+        private static bool DisplayDisConnectFinchRobot(Finch fn)
+        {
+            DisplayHeader("\tDisconnect from Finch");
+            DisplayContinuePrompt();
+            fn.disConnect();
+            Console.Clear();
+            Console.WriteLine("\tFinch has been disconnected");
+            DisplayContinuePrompt();
+            return true;
+        }
+
+        private static void DisplayHeader(string x)
+        {
+            Console.Clear();
+            Console.WriteLine(x);
+        }
+
+        private static void DisplayWelcomeScreen()
+        {
+            Console.WriteLine("");
+            Console.WriteLine("\tHello, Welcome to the Finch robot application!");
+            Console.WriteLine("\tThis application will show you a few things that the Finch can do.");
             DisplayContinuePrompt();
         }
-        static void TalentShowDisplayLightAndSound(Finch fn)
+
+        #endregion tools
+
+        #region talentShowSubs
+
+        private static void TalentShowDisplayLightAndSound(Finch fn)
         {
             fn.noteOn(659);
             fn.setLED(255, 0, 0);
@@ -224,8 +343,10 @@ namespace TalentShow
             fn.noteOff();
             fn.setLED(0, 0, 0);
         }
-        static void TalentShowDisplayDance(Finch fn)
+
+        private static void TalentShowDisplayDance(Finch fn)
         {
+            DisplayHeader("\n\tOption B chosen");
             for (int i = 0; i < 3; i++)
             {
                 fn.wait(300);
@@ -236,12 +357,13 @@ namespace TalentShow
                 fn.setMotors(-255, -100);
                 fn.wait(300);
                 fn.setMotors(-100, -255);
-
             }
-            fn.setMotors(0,0);
+            fn.setMotors(0, 0);
         }
-        static void TalentShowDisplayMixingItUp(Finch fn)
+
+        private static void TalentShowDisplayMixingItUp(Finch fn)
         {
+            DisplayHeader("\t\nOption C chosen ");
             fn.setMotors(0, 0);
             fn.setMotors(255, -255);
             fn.setMotors(-255, 255);
@@ -344,40 +466,95 @@ namespace TalentShow
             fn.setLED(0, 0, 0);
             fn.setMotors(0, 0);
         }
-        static void DisplayAlarmSystem()
+
+        #endregion talentShowSubs
+
+        #region dataRecorderSubs
+
+        private static void DataRecorderDisplayGetData(double[] temperatures)
         {
-            DisplayHeader("\n\t\t\t\t\t\t     Alarm System");
-            Console.WriteLine("\n\t\t\t\t     This module is currently under development.");
-            DisplayContinuePrompt();
-        }
-        static void DisplayUserProgramming()
-        {
-            DisplayHeader("\n\t\t\t\t\t\t   User Programming");
-            Console.WriteLine("\n\t\t\t\t     This module is currently under development.");
-            DisplayContinuePrompt();
-        }
-        static bool DisplayDisConnectFinchRobot(Finch fn)
-        {
-            DisplayHeader("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t\t Disconnect from Finch");
-            DisplayContinuePrompt();
-            fn.disConnect();
-            Console.Clear();
-            Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t\t      Finch has been disconnected");
-            DisplayContinuePrompt();
-            return true;
-        }
-        static void DisplayClosingScreen()
-        {
-            Console.Clear();
-            Console.WriteLine("\n\n\n\n\n\n\n\n\n\n\n\n\n\t\t\t\t    Thank you for checking out my Finch demonstration!");
-            DisplayContinuePrompt();
-        }
-        static void DisplayDataRecorder()
-        {
-            DisplayHeader("\n\t\t\t\t\t\t     Data Recorder");
-            Console.WriteLine("\n\t\t\t\t     This module is currently under development.");
+            Console.WriteLine("\n\tOption D Chosen");
+            DataRecorderDisplayTable(temperatures);
             DisplayContinuePrompt();
         }
 
+        private static int DataRecorderDisplayGetNumberOfDataPoints()
+        {
+            Console.WriteLine("\n\tOption A Chosen");
+
+            DisplayHeader("\n\tGet number of data points");
+
+            Console.Write("\n\tHow many data points would you like? >> ");
+            string userResponse = Console.ReadLine();
+
+            int.TryParse(userResponse, out int numberofDataPoints);
+
+            DisplayContinuePrompt();
+            return numberofDataPoints;
+        }
+
+        private static double DataRecorderDisplayGetDataPointFrequency()
+        {
+            Console.WriteLine("\n\tOption B Chosen");
+            DisplayHeader("\n\tGet frequency of Data Points");
+
+            Console.Write("\n\tFrequency of Data Points: ");
+
+            double.TryParse(Console.ReadLine(), out double dataPointFrequency);
+
+            DisplayContinuePrompt();
+            return dataPointFrequency;
+        }
+
+        private static double[] DataRecorderDisplayGetData(int numberOfDataPoints, double dataPointFrequency, Finch fn)
+        {
+            double[] temperatures = new double[numberOfDataPoints];
+            Console.WriteLine("\n\tOption C Chosen");
+            DisplayHeader("\n\tGet Data");
+
+            Console.WriteLine($"\tNumber of data points: {numberOfDataPoints}");
+            Console.WriteLine($"\tData point frequency: {dataPointFrequency}");
+            Console.WriteLine();
+            Console.WriteLine("\tThe Finch robot is ready to begin recording the temperature data.");
+            DisplayContinuePrompt();
+
+            for (int i = 0; i < numberOfDataPoints; i++)
+            {
+                temperatures[i] = fn.getTemperature();
+                Console.WriteLine($"\tReading {i + 1}: {temperatures[i]:n2} ");
+                int waitInSeconds = (int)((dataPointFrequency) * 1000);
+                fn.wait(waitInSeconds);
+            }
+
+            DisplayContinuePrompt();
+
+            return temperatures;
+        }
+
+        private static void DataRecorderDisplayTable(double[] temperatures)
+        {
+            Console.CursorVisible = false;
+            Console.WriteLine("\n\tOption D Chosen");
+            DisplayHeader("\n\tShow Data");
+
+            Console.WriteLine(
+                "Recording #".PadLeft(19) +
+                "Temp".PadLeft(19)
+                );
+            Console.WriteLine(
+                "-----------".PadLeft(19) +
+                "-----------".PadLeft(19)
+                );
+
+            for (int i = 0; i < temperatures.Length; i++)
+            {
+                Console.WriteLine(
+               (i + 1).ToString().PadLeft(19) +
+               temperatures[i].ToString("n2").PadLeft(19)
+               );
+            }
+        }
+
+        #endregion dataRecorderSubs
     }
 }
