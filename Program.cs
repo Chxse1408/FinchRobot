@@ -1,12 +1,12 @@
 ﻿using FinchAPI;
 using System;
 
-namespace TalentShow
+namespace FinchRobot
 {
     internal class Program
     /************************************
-    Title: Data Recorder
-    Description: Records temperature over time
+    Title: FinchRobot
+    Description: includes Talent Show, Data Recorder, Alarm System, User Programming
     Author: Chase Kieliszewski
     Date Created: 9/27/2020
     Last Modified: 10/12/2020
@@ -17,14 +17,16 @@ namespace TalentShow
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.White;
             DisplayWelcomeScreen();
-            DisplayMainMenu(false);
+            DisplayMainMenu();
             DisplayClosingScreen();
         }
 
         #region menus
 
-        private static void DisplayMainMenu(bool quitApplication)
+        private static void DisplayMainMenu()
         {
+            bool quitApplication = false;
+
             do
             {
                 Console.ForegroundColor = ConsoleColor.White;
@@ -57,7 +59,7 @@ namespace TalentShow
                         break;
 
                     case "4":
-                        DisplayAlarmSystem();
+                        DisplayAlarmSystem(fn);
                         break;
 
                     case "5":
@@ -74,11 +76,7 @@ namespace TalentShow
                         break;
 
                     default:
-
-                        Console.Clear();
-                        Console.WriteLine("That's NOT one of the options!");
-                        Console.WriteLine("Press any key to go back to main menu.");
-                        Console.ReadKey();
+                        DisplayIncorrectInput();
                         break;
                 }
             }
@@ -119,8 +117,7 @@ namespace TalentShow
                         break;
 
                     default:
-                        Console.Clear();
-                        Console.WriteLine("\tThat's NOT one of the options!");
+                        DisplayIncorrectInput();
                         break;
                 }
             } while (!quitTalent);
@@ -128,6 +125,7 @@ namespace TalentShow
 
         private static void DisplayDataRecorder(Finch fn)
         {
+            Console.CursorVisible = true;
             int numberOfDataPoints = 0;
             double dataPointFrequency = 0;
             double[] temperatures = null;
@@ -168,19 +166,67 @@ namespace TalentShow
                         break;
 
                     default:
-
-                        Console.Clear();
-                        Console.WriteLine("    That's NOT one of the options!");
+                        DisplayIncorrectInput();
                         break;
                 }
             } while (!quitData);
         }
 
-        private static void DisplayAlarmSystem()
+        private static void DisplayAlarmSystem(Finch fn)
         {
-            DisplayHeader("     Alarm System");
-            Console.WriteLine("     This module is currently under development.");
-            DisplayContinuePrompt();
+            Console.CursorVisible = true;
+
+            fn.connect();
+            bool quitAlarm = false;
+
+            string sensorsToMonitor = "";
+            string rangeType = "";
+            int minMaxThresholdValue = 0;
+            int timeToMonitor = 0;
+
+            do
+            {
+                DisplayHeader("\n\tAlarm System");
+                Console.WriteLine("\n\tWhat would you like to do?");
+                Console.WriteLine("\ta) Set sensors to monitor");
+                Console.WriteLine("\tb) Set range type");
+                Console.WriteLine("\tc) Set minumum/maximum threshold");
+                Console.WriteLine("\td) Set time to monitor");
+                Console.WriteLine("\te) Set alarm");
+                Console.WriteLine("\tf) Return to main menu");
+                DisplayChooseAnOption();
+                string MenuChoice = Console.ReadLine().ToLower();
+                switch (MenuChoice)
+                {
+                    case "a":
+                        sensorsToMonitor = LightAlarmDisplaySetSensorstoMonitor();
+                        break;
+
+                    case "b":
+                        rangeType = LightAlarmDisplaySetRageType();
+                        break;
+
+                    case "c":
+                        minMaxThresholdValue = LightAlarmDisplaySetMinMaxThresholdValue(fn, rangeType);
+                        break;
+
+                    case "d":
+                        timeToMonitor = LightAlarmDisplaySetTimeToMonitor();
+                        break;
+
+                    case "e":
+                        break;
+                        LightAlarmDisplaySetAlarm(fn, timeToMonitor, rangeType, minMaxThresholdValue, sensorsToMonitor);
+
+                    case "f":
+                        quitAlarm = true;
+                        break;
+
+                    default:
+                        DisplayIncorrectInput();
+                        break;
+                }
+            } while (!quitAlarm);
         }
 
         private static void DisplayUserProgramming()
@@ -226,7 +272,7 @@ namespace TalentShow
                 break;
             }
             DisplayContinuePrompt();
-            DisplayMainMenu(false);
+            DisplayMainMenu();
             return true;
         }
 
@@ -262,25 +308,33 @@ namespace TalentShow
             DisplayContinuePrompt();
         }
 
+        private static void DisplayIncorrectInput()
+        {
+            Console.Clear();
+            Console.WriteLine("\n\tThat's NOT one of the options.");
+            Console.WriteLine("\tPress any key to try again.");
+            Console.ReadKey();
+        }
+
         #endregion tools
 
         #region talentShowSubs
 
         private static void TalentShowDisplayLightAndSound(Finch fn)
         {
-            fn.noteOn(659);
+            fn.noteOn(10548);
             fn.setLED(255, 0, 0);
             fn.wait(300);
             fn.noteOff();
             fn.setLED(0, 0, 0);
             fn.wait(300);
-            fn.noteOn(784);
+            fn.noteOn(12544);
             fn.setLED(00, 255, 0);
             fn.wait(300);
             fn.noteOff();
             fn.setLED(0, 0, 0);
             fn.wait(300);
-            fn.noteOn(880);
+            fn.noteOn(14080);
             fn.setLED(0, 0, 255);
             fn.wait(400);
             fn.noteOff();
@@ -473,16 +527,14 @@ namespace TalentShow
 
         private static void DataRecorderDisplayGetData(double[] temperatures)
         {
-            Console.WriteLine("\n\tOption D Chosen");
             DataRecorderDisplayTable(temperatures);
             DisplayContinuePrompt();
         }
 
         private static int DataRecorderDisplayGetNumberOfDataPoints()
         {
-            Console.WriteLine("\n\tOption A Chosen");
-
-            DisplayHeader("\n\tGet number of data points");
+            Console.CursorVisible = true;
+            DisplayHeader("\n\tOption A Chosen" + "\n\tGet number of data points");
 
             Console.Write("\n\tHow many data points would you like? >> ");
             string userResponse = Console.ReadLine();
@@ -495,8 +547,8 @@ namespace TalentShow
 
         private static double DataRecorderDisplayGetDataPointFrequency()
         {
-            Console.WriteLine("\n\tOption B Chosen");
-            DisplayHeader("\n\tGet frequency of Data Points");
+            Console.CursorVisible = true;
+            DisplayHeader("\n\tOption B Chosen" + "\n\tGet frequency of Data Points");
 
             Console.Write("\n\tFrequency of Data Points: ");
 
@@ -508,9 +560,10 @@ namespace TalentShow
 
         private static double[] DataRecorderDisplayGetData(int numberOfDataPoints, double dataPointFrequency, Finch fn)
         {
+            Console.CursorVisible = false;
             double[] temperatures = new double[numberOfDataPoints];
             Console.WriteLine("\n\tOption C Chosen");
-            DisplayHeader("\n\tGet Data");
+            DisplayHeader("\n\tOption C Chosen" + "\n\tGet Data");
 
             Console.WriteLine($"\tNumber of data points: {numberOfDataPoints}");
             Console.WriteLine($"\tData point frequency: {dataPointFrequency}");
@@ -534,8 +587,7 @@ namespace TalentShow
         private static void DataRecorderDisplayTable(double[] temperatures)
         {
             Console.CursorVisible = false;
-            Console.WriteLine("\n\tOption D Chosen");
-            DisplayHeader("\n\tShow Data");
+            DisplayHeader("\n\tOption D Chosen" + "\n\tShow Data");
 
             Console.WriteLine(
                 "Recording #".PadLeft(19) +
@@ -556,5 +608,124 @@ namespace TalentShow
         }
 
         #endregion dataRecorderSubs
+
+        #region alarmSystemSubs
+
+        private static string LightAlarmDisplaySetSensorstoMonitor()
+        {
+            string sensorsToMonitor;
+            DisplayHeader("\n\tSensors To Monitor");
+
+            Console.Write("\tensors to Monitor? (Left, Right, Both): ");
+            sensorsToMonitor = Console.ReadLine().ToLower();
+
+            return sensorsToMonitor;
+        }
+
+        private static string LightAlarmDisplaySetRageType()
+        {
+            string rangeType;
+            DisplayHeader("\n\tSet Range Type");
+
+            Console.Write("\tRange Type? (Minimum, Maximum): ");
+            rangeType = Console.ReadLine().ToLower();
+
+            return rangeType;
+        }
+
+        private static int LightAlarmDisplaySetMinMaxThresholdValue(Finch fn, string rangeType)
+        {
+            int minMaxThresholdValue;
+
+            DisplayHeader("\n\tMinimum/Maximum Threshold Value");
+
+            Console.WriteLine($"\tLeft light sensor ambient value: {fn.getLeftLightSensor()}");
+            Console.WriteLine($"\tRight light sensor ambient value: {fn.getRightLightSensor()}");
+            Console.WriteLine();
+            Console.Write("\tEnter The {rangeType} light value: ");
+            int.TryParse(Console.ReadLine(), out minMaxThresholdValue);
+
+            return minMaxThresholdValue;
+        }
+
+        private static int LightAlarmDisplaySetTimeToMonitor()
+        {
+            int timeToMonitor;
+            DisplayHeader("\n\tSet Time To Monitor");
+
+            Console.Write("\tDesired monitor time? (in seconds): ");
+            timeToMonitor = int.Parse(Console.ReadLine());
+
+            return timeToMonitor;
+        }
+
+        private static void LightAlarmDisplaySetAlarm(Finch fn,
+                                                    int timeToMonitor,
+                                                    string rangeType,
+                                                    int minMaxThresholdValue,
+                                                    string sensorsToMonitor)
+        {
+            int secondsElapsed = 0;
+            bool thresholdExceeded = false;
+            int currentLightSensorValue = 0;
+            DisplayHeader("\n\tSet Light Alarm");
+            Console.WriteLine($"Sensors to monitor: {sensorsToMonitor}");
+            Console.WriteLine("Range Type: {0}", rangeType);
+            Console.WriteLine($"Min/max Threshold Value: {minMaxThresholdValue}");
+            Console.WriteLine($"Time to monitor: {timeToMonitor}");
+            Console.WriteLine();
+
+            Console.WriteLine("Press any key to begin monitoring.");
+            Console.ReadKey();
+
+            while ((secondsElapsed < timeToMonitor) && !thresholdExceeded)
+            {
+                switch (sensorsToMonitor)
+                {
+                    case "left":
+                        currentLightSensorValue = fn.getLeftLightSensor();
+                        break;
+
+                    case "right":
+
+                        currentLightSensorValue = fn.getRightLightSensor();
+                        break;
+
+                    case "both":
+                        currentLightSensorValue = (fn.getRightLightSensor() + fn.getLeftLightSensor()) / 2;
+                        break;
+                }
+                switch (rangeType)
+                {
+                    case "minimum":
+                        if (currentLightSensorValue < minMaxThresholdValue)
+                        {
+                            thresholdExceeded = true;
+                        }
+                        break;
+
+                    case "maximum":
+                        if (currentLightSensorValue > minMaxThresholdValue)
+                        {
+                            thresholdExceeded = true;
+                        }
+                        break;
+                }
+                secondsElapsed++;
+            }
+
+            if (thresholdExceeded)
+            {
+                Console.WriteLine($"The {rangeType} threshold value was exceeded!");
+            }
+            else
+            {
+                Console.WriteLine($"The {rangeType} threshold value was not exceeded!");
+            }
+
+            return;
+        }
+
+        #endregion alarmSystemSubs
     }
 }
