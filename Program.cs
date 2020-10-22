@@ -1,5 +1,8 @@
 ﻿using FinchAPI;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Linq;
 
 namespace FinchRobot
 {
@@ -203,7 +206,7 @@ namespace FinchRobot
                         break;
 
                     case "b":
-                        rangeType = LightAlarmDisplaySetRageType();
+                        rangeType = LightAlarmDisplaySetRangeType();
                         break;
 
                     case "c":
@@ -215,8 +218,8 @@ namespace FinchRobot
                         break;
 
                     case "e":
-                        break;
                         LightAlarmDisplaySetAlarm(fn, timeToMonitor, rangeType, minMaxThresholdValue, sensorsToMonitor);
+                        break;
 
                     case "f":
                         quitAlarm = true;
@@ -613,50 +616,99 @@ namespace FinchRobot
 
         private static string LightAlarmDisplaySetSensorstoMonitor()
         {
-            string sensorsToMonitor;
+            List<string> correctSensors = new List<string>() { "left", "right", "both" };
+            string sensorsToMonitor = " ";
             DisplayHeader("\n\tSensors To Monitor");
 
-            Console.Write("\tensors to Monitor? (Left, Right, Both): ");
+            Console.Write("\tSensors to Monitor? (Left, Right, Both): ");
             sensorsToMonitor = Console.ReadLine().ToLower();
 
-            return sensorsToMonitor;
+            if (correctSensors.Contains(sensorsToMonitor))
+            {
+                return sensorsToMonitor;
+            }
+            else
+            {
+                DisplayHeader("\n\tPlease input left, right, or both");
+                DisplayContinuePrompt();
+                return LightAlarmDisplaySetSensorstoMonitor();
+            }
         }
 
-        private static string LightAlarmDisplaySetRageType()
+        private static string LightAlarmDisplaySetRangeType()
         {
+            string[] correctRange = new string[] { "minimum", "maximum" };
             string rangeType;
             DisplayHeader("\n\tSet Range Type");
 
             Console.Write("\tRange Type? (Minimum, Maximum): ");
             rangeType = Console.ReadLine().ToLower();
 
-            return rangeType;
+            if (correctRange.Contains(rangeType))
+            {
+                return rangeType;
+            }
+            else
+            {
+                DisplayHeader("\n\tPlease input maximum or minimum");
+                DisplayContinuePrompt();
+                return LightAlarmDisplaySetRangeType();
+            }
         }
 
         private static int LightAlarmDisplaySetMinMaxThresholdValue(Finch fn, string rangeType)
         {
-            int minMaxThresholdValue;
+            string minMaxThresholdValue;
+            int nMinMaxThresholdValue;
 
             DisplayHeader("\n\tMinimum/Maximum Threshold Value");
 
             Console.WriteLine($"\tLeft light sensor ambient value: {fn.getLeftLightSensor()}");
             Console.WriteLine($"\tRight light sensor ambient value: {fn.getRightLightSensor()}");
             Console.WriteLine();
-            Console.Write("\tEnter The {rangeType} light value: ");
-            int.TryParse(Console.ReadLine(), out minMaxThresholdValue);
+            Console.Write($"\tEnter The {rangeType} light value: ");
 
-            return minMaxThresholdValue;
+            minMaxThresholdValue = Console.ReadLine();
+
+            char firstChar = minMaxThresholdValue[0];
+            bool isNumber = Char.IsDigit(firstChar);
+
+            if (!isNumber)
+            {
+                DisplayHeader("\n\tPlease input an integer");
+                DisplayContinuePrompt();
+                return LightAlarmDisplaySetTimeToMonitor();
+            }
+            else
+            {
+                nMinMaxThresholdValue = int.Parse(minMaxThresholdValue);
+                return nMinMaxThresholdValue;
+            }
         }
 
         private static int LightAlarmDisplaySetTimeToMonitor()
         {
-            int timeToMonitor;
+            string timeToMonitor;
+            int nTimeToMonitor;
             DisplayHeader("\n\tSet Time To Monitor");
 
             Console.Write("\tDesired monitor time? (in seconds): ");
-            timeToMonitor = int.Parse(Console.ReadLine());
+            timeToMonitor = Console.ReadLine();
 
-            return timeToMonitor;
+            char firstChar = timeToMonitor[0];
+            bool isNumber = Char.IsDigit(firstChar);
+
+            if (!isNumber)
+            {
+                DisplayHeader("\n\tPlease input an integer");
+                DisplayContinuePrompt();
+                return LightAlarmDisplaySetTimeToMonitor();
+            }
+            else
+            {
+                nTimeToMonitor = int.Parse(timeToMonitor);
+                return nTimeToMonitor;
+            }
         }
 
         private static void LightAlarmDisplaySetAlarm(Finch fn,
@@ -669,16 +721,16 @@ namespace FinchRobot
             bool thresholdExceeded = false;
             int currentLightSensorValue = 0;
             DisplayHeader("\n\tSet Light Alarm");
-            Console.WriteLine($"Sensors to monitor: {sensorsToMonitor}");
-            Console.WriteLine("Range Type: {0}", rangeType);
-            Console.WriteLine($"Min/max Threshold Value: {minMaxThresholdValue}");
-            Console.WriteLine($"Time to monitor: {timeToMonitor}");
+            Console.WriteLine($"\tSensors to monitor: {sensorsToMonitor}");
+            Console.WriteLine("\tRange Type: {0}", rangeType);
+            Console.WriteLine($"\tMin/max Threshold Value: {minMaxThresholdValue}");
+            Console.WriteLine($"\tTime to monitor: {timeToMonitor}");
             Console.WriteLine();
 
-            Console.WriteLine("Press any key to begin monitoring.");
+            Console.WriteLine("\tPress any key to begin monitoring.");
             Console.ReadKey();
 
-            while ((secondsElapsed < timeToMonitor) && !thresholdExceeded)
+            while (secondsElapsed < timeToMonitor && !thresholdExceeded)
             {
                 switch (sensorsToMonitor)
                 {
@@ -711,17 +763,20 @@ namespace FinchRobot
                         }
                         break;
                 }
+                fn.wait(1000);
                 secondsElapsed++;
+                Console.WriteLine("Current Light Value: {0} ", currentLightSensorValue);
             }
 
             if (thresholdExceeded)
             {
-                Console.WriteLine($"The {rangeType} threshold value was exceeded!");
+                Console.WriteLine($"\tThe {rangeType} threshold value was exceeded!");
             }
             else
             {
-                Console.WriteLine($"The {rangeType} threshold value was not exceeded!");
+                Console.WriteLine($"\tThe {rangeType} threshold value was not exceeded!");
             }
+            DisplayContinuePrompt();
 
             return;
         }
