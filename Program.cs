@@ -911,7 +911,7 @@ namespace FinchRobot
                 Console.Write(v1);
                 bool isNumber = Int32.TryParse(Console.ReadLine(), out motorSpeed);
 
-                if (isNumber == true)
+                if (isNumber == true && motorSpeed <= 255 && motorSpeed >= 1)
                 {
                     validAns = true;
                 }
@@ -931,7 +931,7 @@ namespace FinchRobot
                 Console.Write(v1);
                 bool isDouble = Double.TryParse(Console.ReadLine(), out waitSeconds);
 
-                if (isDouble == false)
+                if (isDouble == false || waitSeconds < 0 || waitSeconds > 10)
                 {
                     Console.Clear();
                     Console.WriteLine("Please enter an number between '0' and '10'");
