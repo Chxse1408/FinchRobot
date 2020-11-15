@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.Remoting.Messaging;
+using System.IO;
 
 namespace FinchRobot
 {
@@ -28,13 +29,14 @@ namespace FinchRobot
     Description: includes Talent Show, Data Recorder, Alarm System, User Programming
     Author: Chase Kieliszewski
     Date Created: 9/27/2020
-    Last Modified: 10/26/2020
+    Last Modified: 11/1/2020
     ************************************/
     {
         private static void Main(string[] args)
         {
             Console.CursorVisible = false;
             Console.ForegroundColor = ConsoleColor.White;
+            DisplayLoginRegister();
             DisplayWelcomeScreen();
             DisplayMainMenu();
             DisplayClosingScreen();
@@ -764,7 +766,7 @@ namespace FinchRobot
 
         #endregion alarmSystemSubs
 
-        #region UPSubs
+        #region userProgramingSubs
 
         private static (int motorSpeed, int ledBrightness, double waitSeconds) DisplayUserProgrammingGetCommandsParamter()
         {
@@ -945,7 +947,136 @@ namespace FinchRobot
 
         #endregion validation
 
-        #endregion UPSubs
+        #endregion userProgramingSubs
+
+        #region authentication
+
+        private static void DisplayLoginRegister()
+        {
+            DisplayHeader("Login/Register");
+
+            Console.Write("\tAre you a registered user? (Y/N)");
+
+            if (Console.ReadLine().ToUpper() == "Y")
+            {
+                DisplayLogin();
+            }
+            else
+            {
+                DisplayRegisterUser();
+                DisplayLogin();
+            }
+        }
+
+        private static void DisplayRegisterUser()
+        {
+            string userName;
+            string passWord;
+
+            DisplayHeader("Registration");
+
+            Console.Write("\tEnter Username: ");
+            userName = Console.ReadLine();
+            Console.Write("\tEnter Password: ");
+            passWord = Console.ReadLine();
+
+            WriteLoginInfoData(userName, passWord);
+            Console.Clear();
+
+            Console.WriteLine();
+            Console.WriteLine("\tYou have entered the following information: ");
+            Console.WriteLine($"\tUsername: {userName}");
+            Console.WriteLine($"\tPassword: {passWord}");
+            Console.WriteLine("\tInformation has been saved.");
+
+            DisplayContinuePrompt();
+        }
+
+        private static void WriteLoginInfoData(string userName, string passWord)
+        {
+            string dataPath = @"Data/Logins.txt";
+
+            string loginInfoText;
+
+            loginInfoText = userName + "," + passWord;
+
+            File.WriteAllText(dataPath, loginInfoText);
+        }
+
+        private static void DisplayLogin()
+        {
+            string userName;
+            string passWord;
+            bool validLogin;
+
+            do
+            {
+                DisplayHeader("Login");
+
+                Console.WriteLine();
+                Console.Write("\tEnter Your username: ");
+                userName = Console.ReadLine();
+                Console.Write("\tEnter your password: ");
+                passWord = Console.ReadLine();
+
+                validLogin = IsValidLoginInfo(userName, passWord);
+
+                Console.WriteLine();
+                if (validLogin)
+                {
+                    Console.WriteLine("\tYou are now logged in.");
+                }
+                else
+                {
+                    Console.WriteLine("\tUsername or Password is incorrect.");
+                    Console.WriteLine("\tPlease try again");
+                }
+                DisplayContinuePrompt();
+            } while (!validLogin);
+        }
+
+        private static bool IsValidLoginInfo(string userName, string passWord)
+        {
+            List<(string userName, string passWord)> registeredUserLoginInfo = new List<(string userName, string passWord)>();
+            bool validUser = false;
+
+            registeredUserLoginInfo = ReadLoginInfoData();
+
+            foreach ((string userName, string passWord) userLoginInfo in registeredUserLoginInfo)
+            {
+                if ((userLoginInfo.userName == userName) && (userLoginInfo.passWord == passWord))
+                {
+                    validUser = true;
+                    break;
+                }
+            }
+
+            return validUser;
+        }
+
+        private static List<(string userName, string passWord)> ReadLoginInfoData()
+        {
+            string dataPath = @"Data/Logins.txt";
+
+            string[] loginInfoArray;
+            (string userName, string passWord) loginInfoTuple;
+
+            List<(string userName, string passWord)> registeredUserLoginInfo = new List<(string userName, string passWord)>();
+
+            loginInfoArray = File.ReadAllLines(dataPath);
+
+            foreach (string loginInfoText in loginInfoArray)
+            {
+                loginInfoArray = loginInfoText.Split(',');
+
+                loginInfoTuple.userName = loginInfoArray[0];
+                loginInfoTuple.passWord = loginInfoArray[1];
+                registeredUserLoginInfo.Add(loginInfoTuple);
+            }
+            return registeredUserLoginInfo;
+        }
+
+        #endregion authentication
 
         #region tools
 
@@ -957,7 +1088,7 @@ namespace FinchRobot
         private static void DisplayClosingScreen()
         {
             Console.Clear();
-            Console.WriteLine("\tThank you for checking out my Finch demonstration!");
+            DisplayHeader("Thank you for checking out my Finch demonstration!");
             DisplayContinuePrompt();
         }
 
@@ -995,11 +1126,10 @@ namespace FinchRobot
 
         private static bool DisplayDisConnectFinchRobot(Finch fn)
         {
-            DisplayHeader("\tDisconnect from Finch");
+            DisplayHeader("Disconnect from Finch");
             DisplayContinuePrompt();
             fn.disConnect();
-            Console.Clear();
-            Console.WriteLine("\tFinch has been disconnected");
+            DisplayHeader("Finch has been disconnected");
             DisplayContinuePrompt();
             return true;
         }
@@ -1012,6 +1142,7 @@ namespace FinchRobot
 
         private static void DisplayWelcomeScreen()
         {
+            Console.Clear();
             Console.WriteLine("");
             Console.WriteLine("\tHello, Welcome to the Finch robot application!");
             Console.WriteLine("\tThis application will show you a few things that the Finch can do.");
